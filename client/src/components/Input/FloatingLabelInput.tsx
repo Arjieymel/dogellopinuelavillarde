@@ -53,7 +53,6 @@ const FloatingLabelInput: FC<FloatingLabelInputProps> = ({
                 `
             }`}
           placeholder=" "
-          required={required}
           autoFocus={autoFocus}
           disabled={disabled}
           readOnly={readOnly}

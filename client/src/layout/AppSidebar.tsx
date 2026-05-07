@@ -5,15 +5,18 @@ const AppSidebar = () => {
     const { isOpen, toggleSidebar } = useSidebar();
 
     const sidebarItems = [
-        {
-            path: '/genders',
-            text: 'Genders',
-        },
-        {
-            path: '/users',
-            text: 'Users',
-        }
-    ]
+        { path: '/dashboard', text: 'Dashboard' },
+        { path: '/customers', text: 'Customers' },
+        { path: '/products', text: 'Products' },
+        { path: '/orders', text: 'Orders' },
+        { path: '/deliveries', text: 'Deliveries' },
+        { path: '/reports', text: 'Reports' },
+
+        // Legacy modules kept for now
+        { path: '/genders', text: 'Genders' },
+        { path: '/users', text: 'Users' },
+    ];
+
 
     return (
         <>
