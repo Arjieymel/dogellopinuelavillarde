@@ -58,7 +58,44 @@ const OrdersMainPage = () => {
     const [errors, setErrors] = useState<OrderFieldErrors>({});
     const [formLoading, setFormLoading] = useState(false);
 
+    const [isCancelOpen, setIsCancelOpen] = useState(false);
+    const [selectedCancelOrderId, setSelectedCancelOrderId] = useState<number | null>(null);
+    const [cancelLoading, setCancelLoading] = useState(false);
+
     const tableRef = useRef<HTMLDivElement>(null);
+
+    const handleConfirmCancelOrder = async () => {
+        if (!selectedCancelOrderId) return;
+        setCancelLoading(true);
+        try {
+            const res = await OrderService.cancelOrder(selectedCancelOrderId);
+            if (res.status >= 200 && res.status < 300) {
+                const cancelledOrder: OrderColumns | undefined = res.data.order;
+                setOrders((prev) =>
+                    prev.map((x) =>
+                        x.order_id === selectedCancelOrderId
+                            ? {
+                                ...x,
+                                status: "Cancelled" as OrderStatus,
+                                ...(cancelledOrder ?? {}),
+                            }
+                            : x,
+                    ),
+                );
+                showToastMessage(res.data.message ?? "Order cancelled");
+                setIsCancelOpen(false);
+                setSelectedCancelOrderId(null);
+            }
+        } catch (err: any) {
+            showToastMessage(err?.response?.data?.message ?? "Failed to cancel order", true);
+        } finally {
+            setCancelLoading(false);
+        }
+    };
+
+
+
+
 
     const loadCustomers = async () => {
         setListsLoading(true);
@@ -292,8 +329,25 @@ const OrdersMainPage = () => {
                                                 <button type="button" className="text-green-600 hover:underline" onClick={() => openEdit(o)}>
                                                     Update Status
                                                 </button>
+
+                                                {(o.status === "Pending" || o.status === "Processing") && (
+                                                    <button
+                                                        type="button"
+                                                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        onClick={() => {
+                                                            setSelectedCancelOrderId(o.order_id);
+                                                            setIsCancelOpen(true);
+                                                        }}
+                                                        disabled={cancelLoading && selectedCancelOrderId === o.order_id}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                )}
+
+
                                             </div>
                                         </TableCell>
+
                                     </TableRow>
                                 ))
                             ) : !loading ? (
@@ -384,9 +438,45 @@ const OrdersMainPage = () => {
                 </form>
             </Modal>
 
+            {/* Cancel Order Modal */}
+            <Modal isOpen={isCancelOpen} onClose={() => setIsCancelOpen(false)} showCloseButton>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-gray-900">Confirm Cancel</h2>
+                        <CloseButton label="Close" onClose={() => setIsCancelOpen(false)} />
+                    </div>
+
+                    <p className="text-sm text-gray-600">
+                        Are you sure you want to cancel order <span className="font-semibold text-gray-800">#{selectedCancelOrderId}</span>?
+                    </p>
+
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                            onClick={() => setIsCancelOpen(false)}
+                            disabled={cancelLoading}
+                        >
+                            No
+                        </button>
+
+                        <button
+                            type="button"
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleConfirmCancelOrder}
+                            disabled={cancelLoading}
+                        >
+                            {cancelLoading ? "Cancelling..." : "Yes, Cancel"}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
             {/* Edit Order Modal */}
             <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} showCloseButton>
                 <form onSubmit={handleSubmitEdit} className="space-y-4">
+
+
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-gray-900">Update Order Status</h2>
                         <CloseButton label="Close" onClose={() => setIsEditOpen(false)} />

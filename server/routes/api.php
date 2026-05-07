@@ -65,14 +65,18 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/storeOrder', 'storeOrder');
         Route::get('/getOrder/{orderId}', 'getOrder');
         Route::put('/updateOrder/{order}', 'updateOrder');
+        Route::put('/cancelOrder/{order}', 'cancelOrder');
     });
+
 
     Route::controller(DeliveryController::class)->prefix('/deliveries')->group(function () {
         Route::get('/loadDeliveries', 'loadDeliveries');
         Route::post('/storeDelivery', 'storeDelivery');
         Route::get('/getDelivery/{deliveryId}', 'getDelivery');
         Route::put('/updateDelivery/{delivery}', 'updateDelivery');
+        Route::put('/cancelDelivery/{delivery}', 'cancelDelivery');
     });
+
 
     Route::controller(ReportController::class)->prefix('/reports')->group(function () {
         Route::get('/dailySales', 'dailySales');

@@ -10,8 +10,50 @@ use Illuminate\Support\Facades\DB;
 
 class DeliveryController extends Controller
 {
+    public function cancelDelivery(Request $request, Delivery $delivery)
+    {
+        $request->validate([
+            'delivery_status' => ['sometimes', 'string'],
+        ]);
+
+        try {
+            DB::transaction(function () use ($delivery) {
+                $current = $delivery->delivery_status;
+
+                if ($current === 'Delivered') {
+                    throw new \Exception('Cannot cancel a delivered delivery.');
+                }
+
+                if ($current === 'Cancelled') {
+                    throw new \Exception('Delivery is already cancelled.');
+                }
+
+                if (!in_array($current, ['Pending', 'Out for Delivery'], true)) {
+                    throw new \Exception('Delivery cannot be cancelled in its current status.');
+                }
+
+                $delivery->update(['delivery_status' => 'Cancelled']);
+
+                $order = $delivery->order;
+                if ($order) {
+                    $order->update(['status' => 'Cancelled']);
+                }
+            });
+        } catch (\Throwable $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        $delivery->refresh();
+
+        return response()->json([
+            'delivery' => $delivery->fresh('order'),
+            'message' => 'Delivery cancelled successfully.',
+        ], 200);
+    }
+
     public function loadDeliveries(Request $request)
     {
+
         $search = $request->input('search');
 
         $deliveries = Delivery::query()

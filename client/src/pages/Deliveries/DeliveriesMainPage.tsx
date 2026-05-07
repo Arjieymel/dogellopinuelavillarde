@@ -17,7 +17,10 @@ import type { DeliveryColumns, DeliveryFieldErrors, DeliveryStatus } from "../..
 import OrderService from "../../Services/OrderService";
 import type { OrderColumns } from "../../interfaces/OrderInterface";
 
+type DeliveryCancelableStatus = "Pending" | "Out for Delivery";
+
 const DeliveriesMainPage = () => {
+
     const {
         message: toastMessage,
         isVisible: toastMessageIsVisible,
@@ -59,7 +62,49 @@ const DeliveriesMainPage = () => {
     const [errors, setErrors] = useState<DeliveryFieldErrors>({});
     const [formLoading, setFormLoading] = useState(false);
 
+    const [isCancelOpen, setIsCancelOpen] = useState(false);
+    const [selectedCancelDeliveryId, setSelectedCancelDeliveryId] = useState<number | null>(null);
+    const [cancelLoading, setCancelLoading] = useState(false);
+
     const tableRef = useRef<HTMLDivElement>(null);
+
+    const handleConfirmCancelDelivery = async () => {
+        if (!selectedCancelDeliveryId) return;
+        setCancelLoading(true);
+        try {
+            const res = await DeliveryService.cancelDelivery(selectedCancelDeliveryId);
+            if (res.status >= 200 && res.status < 300) {
+                const cancelledDelivery: DeliveryColumns | undefined = res.data.delivery;
+
+                // Ensure table refresh so UI is always consistent with backend (pagination/search).
+                await loadDeliveries(1, false, debouncedSearch);
+
+                // Optimistic local fallback (in case backend payload shape differs)
+                if (cancelledDelivery) {
+                    setDeliveries((prev) =>
+                        prev.map((x) =>
+                            x.delivery_id === selectedCancelDeliveryId
+                                ? {
+                                    ...x,
+                                    ...(cancelledDelivery ?? {}),
+                                    delivery_status: "Cancelled" as DeliveryStatus,
+                                }
+                                : x,
+                        ),
+                    );
+                }
+
+                showToastMessage(res.data.message ?? "Delivery cancelled");
+                setIsCancelOpen(false);
+                setSelectedCancelDeliveryId(null);
+            }
+        } catch (err: any) {
+            showToastMessage(err?.response?.data?.message ?? "Failed to cancel delivery", true);
+        } finally {
+            setCancelLoading(false);
+        }
+    };
+
 
     const loadOrdersForSelect = async () => {
         setOrdersLoading(true);
@@ -280,10 +325,28 @@ const DeliveriesMainPage = () => {
                                             <div className="text-xs text-gray-400">{d.order?.customer?.fullname ?? "-"}</div>
                                         </TableCell>
                                         <TableCell className="px-4 py-3 text-center">
-                                            <button type="button" className="text-green-600 hover:underline" onClick={() => openEdit(d)}>
-                                                Update
-                                            </button>
+                                            <div className="flex justify-center gap-4">
+                                                <button type="button" className="text-green-600 hover:underline" onClick={() => openEdit(d)}>
+                                                    Update
+                                                </button>
+
+
+                                                {(d.delivery_status === "Pending" || d.delivery_status === "Out for Delivery") && (
+                                                    <button
+                                                        type="button"
+                                                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        onClick={() => {
+                                                            setSelectedCancelDeliveryId(d.delivery_id);
+                                                            setIsCancelOpen(true);
+                                                        }}
+                                                        disabled={cancelLoading && selectedCancelDeliveryId === d.delivery_id}
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                )}
+                                            </div>
                                         </TableCell>
+
                                     </TableRow>
                                 ))
                             ) : !loading ? (
@@ -376,6 +439,54 @@ const DeliveriesMainPage = () => {
                         <SubmitButton label={formLoading ? "Saving..." : "Save"} loading={formLoading} />
                     </div>
                 </form>
+            </Modal>
+
+            {/* Cancel Delivery Modal */}
+            <Modal
+                isOpen={isCancelOpen}
+                onClose={() => {
+                    if (!cancelLoading) {
+                        setIsCancelOpen(false);
+                        setSelectedCancelDeliveryId(null);
+                    }
+                }}
+            >
+                <div className="flex items-center justify-between">
+                    <h2 className="text-lg font-semibold text-gray-900">Cancel Delivery</h2>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                    <p className="text-sm text-gray-700">
+                        Are you sure you want to cancel this delivery?
+                        <span className="font-semibold text-gray-900">
+                            {selectedCancelDeliveryId ? ` #${selectedCancelDeliveryId}` : ""}
+                        </span>
+                    </p>
+
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => {
+                                if (cancelLoading) return;
+                                setIsCancelOpen(false);
+                                setSelectedCancelDeliveryId(null);
+                            }}
+                            disabled={cancelLoading}
+                        >
+                            Back
+                        </button>
+
+                        <button
+                            type="button"
+                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleConfirmCancelDelivery}
+                            disabled={cancelLoading || !selectedCancelDeliveryId}
+                        >
+                            {cancelLoading ? "Cancelling..." : "Yes, Cancel"}
+                        </button>
+                    </div>
+                </div>
             </Modal>
 
             {/* Edit Delivery Modal */}

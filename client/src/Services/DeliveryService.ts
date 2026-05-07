@@ -34,7 +34,12 @@ const DeliveryService = {
     updateDelivery: async (deliveryId: string | number, data: DeliveryUpdatePayload) => {
         return AxiosInstance.put(`/deliveries/updateDelivery/${deliveryId}`, data);
     },
+
+    cancelDelivery: async (deliveryId: string | number) => {
+        return AxiosInstance.put(`/deliveries/cancelDelivery/${deliveryId}`, {});
+    },
 };
 
 export default DeliveryService;
+
 

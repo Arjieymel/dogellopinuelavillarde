@@ -11,7 +11,36 @@ use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
+    public function cancelOrder(Request $request, Order $order)
+    {
+        $validated = $request->validate([
+            'status' => ['sometimes', 'string'],
+        ]);
+
+        $current = $order->status;
+
+        if ($current === 'Delivered') {
+            return response()->json(['message' => 'Cannot cancel a delivered order.'], 422);
+        }
+
+        if ($current === 'Cancelled') {
+            return response()->json(['message' => 'Order is already cancelled.'], 422);
+        }
+
+        if (!in_array($current, ['Pending', 'Processing'], true)) {
+            return response()->json(['message' => 'Order cannot be cancelled in its current status.'], 422);
+        }
+
+        $order->update(['status' => 'Cancelled']);
+
+        return response()->json([
+            'order' => $order->fresh(),
+            'message' => 'Order cancelled successfully.',
+        ], 200);
+    }
+
     public function loadOrders(Request $request)
+
     {
         $search = $request->input('search');
 

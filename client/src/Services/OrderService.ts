@@ -30,7 +30,12 @@ const OrderService = {
     updateOrder: async (orderId: string | number, data: OrderUpdatePayload) => {
         return AxiosInstance.put(`/orders/updateOrder/${orderId}`, data);
     },
+
+    cancelOrder: async (orderId: string | number) => {
+        return AxiosInstance.put(`/orders/cancelOrder/${orderId}`, {});
+    },
 };
+
 
 export default OrderService;
 
