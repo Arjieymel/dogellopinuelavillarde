@@ -38,6 +38,10 @@ const DeliveryService = {
     cancelDelivery: async (deliveryId: string | number) => {
         return AxiosInstance.put(`/deliveries/cancelDelivery/${deliveryId}`, {});
     },
+
+    archiveDelivery: async (deliveryId: string | number) => {
+        return AxiosInstance.put(`/deliveries/archiveDelivery/${deliveryId}`, {});
+    },
 };
 
 export default DeliveryService;

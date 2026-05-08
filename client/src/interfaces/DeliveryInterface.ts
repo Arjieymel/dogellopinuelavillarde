@@ -1,6 +1,6 @@
 import type { OrderColumns } from "./OrderInterface";
 
-export type DeliveryStatus = "Pending" | "Out for Delivery" | "Delivered";
+export type DeliveryStatus = "Pending" | "Out for Delivery" | "Delivered" | "Cancelled";
 
 export type DeliveryColumns = {
     delivery_id: number;

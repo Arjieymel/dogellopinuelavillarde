@@ -17,8 +17,6 @@ import type { DeliveryColumns, DeliveryFieldErrors, DeliveryStatus } from "../..
 import OrderService from "../../Services/OrderService";
 import type { OrderColumns } from "../../interfaces/OrderInterface";
 
-type DeliveryCancelableStatus = "Pending" | "Out for Delivery";
-
 const DeliveriesMainPage = () => {
 
     const {
@@ -66,7 +64,12 @@ const DeliveriesMainPage = () => {
     const [selectedCancelDeliveryId, setSelectedCancelDeliveryId] = useState<number | null>(null);
     const [cancelLoading, setCancelLoading] = useState(false);
 
+    const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+    const [selectedArchiveDeliveryId, setSelectedArchiveDeliveryId] = useState<number | null>(null);
+    const [archiveLoading, setArchiveLoading] = useState(false);
+
     const tableRef = useRef<HTMLDivElement>(null);
+
 
     const handleConfirmCancelDelivery = async () => {
         if (!selectedCancelDeliveryId) return;
@@ -105,8 +108,30 @@ const DeliveriesMainPage = () => {
         }
     };
 
+    const handleConfirmArchiveDelivery = async () => {
+        if (!selectedArchiveDeliveryId) return;
+        setArchiveLoading(true);
+        try {
+            const res = await DeliveryService.archiveDelivery(selectedArchiveDeliveryId);
+            if (res.status >= 200 && res.status < 300) {
+                // Optimistic remove so the row disappears immediately (no full page reload)
+                setDeliveries((prev) => prev.filter((x) => x.delivery_id !== selectedArchiveDeliveryId));
+
+                // Still refresh for pagination/search consistency
+                await loadDeliveries(1, false, debouncedSearch);
+                showToastMessage(res.data.message ?? "Delivery archived");
+                setIsArchiveOpen(false);
+                setSelectedArchiveDeliveryId(null);
+            }
+        } catch (err: any) {
+            showToastMessage(err?.response?.data?.message ?? "Failed to archive delivery", true);
+        } finally {
+            setArchiveLoading(false);
+        }
+    };
 
     const loadOrdersForSelect = async () => {
+
         setOrdersLoading(true);
         try {
             // Reuse orders endpoint; we only need recent orders.
@@ -344,8 +369,23 @@ const DeliveriesMainPage = () => {
                                                         Cancel
                                                     </button>
                                                 )}
+
+                                                {(d.delivery_status === "Delivered" || d.delivery_status === "Cancelled") && (
+                                                    <button
+                                                        type="button"
+                                                        className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        onClick={() => {
+                                                            setSelectedArchiveDeliveryId(d.delivery_id);
+                                                            setIsArchiveOpen(true);
+                                                        }}
+                                                        disabled={archiveLoading && selectedArchiveDeliveryId === d.delivery_id}
+                                                    >
+                                                        {archiveLoading && selectedArchiveDeliveryId === d.delivery_id ? "Archiving..." : "Archive"}
+                                                    </button>
+                                                )}
                                             </div>
                                         </TableCell>
+
 
                                     </TableRow>
                                 ))
@@ -451,11 +491,13 @@ const DeliveriesMainPage = () => {
                     }
                 }}
             >
+
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-900">Cancel Delivery</h2>
                 </div>
 
                 <div className="mt-4 space-y-3">
+
                     <p className="text-sm text-gray-700">
                         Are you sure you want to cancel this delivery?
                         <span className="font-semibold text-gray-900">
@@ -489,8 +531,58 @@ const DeliveriesMainPage = () => {
                 </div>
             </Modal>
 
+            {/* Archive Delivery Modal */}
+            <Modal
+                isOpen={isArchiveOpen}
+                onClose={() => {
+                    if (!archiveLoading) {
+                        setIsArchiveOpen(false);
+                        setSelectedArchiveDeliveryId(null);
+                    }
+                }}
+                showCloseButton
+            >
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-gray-900">Archive Delivery</h2>
+                    </div>
+
+                    <p className="text-sm text-gray-700">
+                        Are you sure you want to archive this delivery?
+                        <span className="font-semibold text-gray-900">
+                            {selectedArchiveDeliveryId ? ` #${selectedArchiveDeliveryId}` : ""}
+                        </span>
+                    </p>
+
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => {
+                                if (archiveLoading) return;
+                                setIsArchiveOpen(false);
+                                setSelectedArchiveDeliveryId(null);
+                            }}
+                            disabled={archiveLoading}
+                        >
+                            Back
+                        </button>
+
+                        <button
+                            type="button"
+                            className="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleConfirmArchiveDelivery}
+                            disabled={archiveLoading || !selectedArchiveDeliveryId}
+                        >
+                            {archiveLoading ? "Archiving..." : "Yes, Archive"}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
             {/* Edit Delivery Modal */}
             <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} showCloseButton>
+
                 <form onSubmit={handleSubmitEdit} className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-gray-900">Update Delivery</h2>

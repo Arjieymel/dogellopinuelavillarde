@@ -66,6 +66,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/getOrder/{orderId}', 'getOrder');
         Route::put('/updateOrder/{order}', 'updateOrder');
         Route::put('/cancelOrder/{order}', 'cancelOrder');
+        Route::put('/archiveOrder/{order}', 'archiveOrder');
     });
 
 
@@ -75,6 +76,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/getDelivery/{deliveryId}', 'getDelivery');
         Route::put('/updateDelivery/{delivery}', 'updateDelivery');
         Route::put('/cancelDelivery/{delivery}', 'cancelDelivery');
+        Route::put('/archiveDelivery/{delivery}', 'archiveDelivery');
     });
 
 

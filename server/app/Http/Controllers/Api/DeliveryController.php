@@ -53,12 +53,13 @@ class DeliveryController extends Controller
 
     public function loadDeliveries(Request $request)
     {
-
         $search = $request->input('search');
+        $archived = $request->boolean('archived', false);
 
         $deliveries = Delivery::query()
             ->with(['order.customer', 'order.product'])
             ->where('tbl_deliveries.is_deleted', false)
+            ->where('tbl_deliveries.is_archived', $archived)
             ->orderBy('tbl_deliveries.delivery_date', 'desc');
 
         if ($search) {
@@ -129,6 +130,30 @@ class DeliveryController extends Controller
         return response()->json([
             'delivery' => $delivery->fresh('order'),
             'message' => 'Delivery Successfully Updated.',
+        ], 200);
+    }
+
+    public function archiveDelivery(Request $request, Delivery $delivery)
+    {
+        $current = $delivery->delivery_status;
+
+        if (!in_array($current, ['Delivered', 'Cancelled'], true)) {
+            return response()->json(['message' => 'Only delivered or cancelled deliveries can be archived.'], 422);
+        }
+
+        $delivery->update(['is_archived' => true]);
+
+        $order = $delivery->order;
+        if ($order) {
+            // Keep order status consistent for history/reporting
+            if ($current === 'Cancelled') {
+                $order->update(['status' => 'Cancelled']);
+            }
+        }
+
+        return response()->json([
+            'delivery' => $delivery->fresh('order'),
+            'message' => 'Delivery archived successfully.',
         ], 200);
     }
 

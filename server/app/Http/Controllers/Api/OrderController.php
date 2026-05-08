@@ -40,13 +40,14 @@ class OrderController extends Controller
     }
 
     public function loadOrders(Request $request)
-
     {
         $search = $request->input('search');
+        $archived = $request->boolean('archived', false);
 
         $orders = Order::query()
             ->with(['customer', 'product'])
             ->where('tbl_orders.is_deleted', false)
+            ->where('tbl_orders.is_archived', $archived)
             ->orderBy('tbl_orders.created_at', 'desc');
 
         if ($search) {
@@ -122,6 +123,22 @@ class OrderController extends Controller
             ->first();
 
         return response()->json(['order' => $order], 200);
+    }
+
+    public function archiveOrder(Request $request, Order $order)
+    {
+        $current = $order->status;
+
+        if (!in_array($current, ['Delivered', 'Cancelled'], true)) {
+            return response()->json(['message' => 'Only delivered or cancelled orders can be archived.'], 422);
+        }
+
+        $order->update(['is_archived' => true]);
+
+        return response()->json([
+            'order' => $order->fresh(),
+            'message' => 'Order archived successfully.',
+        ], 200);
     }
 
     public function updateOrder(Request $request, Order $order)

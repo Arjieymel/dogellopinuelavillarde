@@ -21,6 +21,7 @@ class Order extends Model
         'total_amount',
         'status',
         'is_deleted',
+        'is_archived',
     ];
 
     protected $casts = [

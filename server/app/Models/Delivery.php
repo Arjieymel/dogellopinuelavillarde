@@ -19,6 +19,7 @@ class Delivery extends Model
         'delivery_date',
         'delivery_status',
         'is_deleted',
+        'is_archived',
     ];
 
     protected $casts = [

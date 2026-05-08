@@ -62,6 +62,11 @@ const OrdersMainPage = () => {
     const [selectedCancelOrderId, setSelectedCancelOrderId] = useState<number | null>(null);
     const [cancelLoading, setCancelLoading] = useState(false);
 
+    const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+    const [selectedArchiveOrderId, setSelectedArchiveOrderId] = useState<number | null>(null);
+    const [archiveLoading, setArchiveLoading] = useState(false);
+
+
     const tableRef = useRef<HTMLDivElement>(null);
 
     const handleConfirmCancelOrder = async () => {
@@ -92,6 +97,25 @@ const OrdersMainPage = () => {
             setCancelLoading(false);
         }
     };
+
+    const handleConfirmArchiveOrder = async () => {
+        if (!selectedArchiveOrderId) return;
+        setArchiveLoading(true);
+        try {
+            const res = await OrderService.archiveOrder(selectedArchiveOrderId);
+            if (res.status >= 200 && res.status < 300) {
+                await loadOrders(1, false, debouncedSearch);
+                showToastMessage(res.data.message ?? "Order archived");
+                setIsArchiveOpen(false);
+                setSelectedArchiveOrderId(null);
+            }
+        } catch (err: any) {
+            showToastMessage(err?.response?.data?.message ?? "Failed to archive order", true);
+        } finally {
+            setArchiveLoading(false);
+        }
+    };
+
 
 
 
@@ -295,6 +319,7 @@ const OrdersMainPage = () => {
                                 <TableCell isHeader className="px-5 py-3 font-medium text-start">Total Amount</TableCell>
                                 <TableCell isHeader className="px-5 py-3 font-medium text-center">Status</TableCell>
                                 <TableCell isHeader className="px-5 py-3 font-medium text-center">Action</TableCell>
+
                             </TableRow>
                         </TableHeader>
 
@@ -330,7 +355,7 @@ const OrdersMainPage = () => {
                                                     Update Status
                                                 </button>
 
-                                                {(o.status === "Pending" || o.status === "Processing") && (
+                                                {((o.status as string) === "Pending" || (o.status as string) === "Processing") && (
                                                     <button
                                                         type="button"
                                                         className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -344,6 +369,19 @@ const OrdersMainPage = () => {
                                                     </button>
                                                 )}
 
+                                                {(o.status === "Delivered" || o.status === ("Cancelled" as OrderStatus)) && (
+                                                    <button
+                                                        type="button"
+                                                        className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                        onClick={() => {
+                                                            setSelectedArchiveOrderId(o.order_id);
+                                                            setIsArchiveOpen(true);
+                                                        }}
+                                                        disabled={archiveLoading && selectedArchiveOrderId === o.order_id}
+                                                    >
+                                                        {archiveLoading && selectedArchiveOrderId === o.order_id ? "Archiving..." : "Archive"}
+                                                    </button>
+                                                )}
 
                                             </div>
                                         </TableCell>
@@ -440,6 +478,7 @@ const OrdersMainPage = () => {
 
             {/* Cancel Order Modal */}
             <Modal isOpen={isCancelOpen} onClose={() => setIsCancelOpen(false)} showCloseButton>
+
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-gray-900">Confirm Cancel</h2>
@@ -472,8 +511,45 @@ const OrdersMainPage = () => {
                 </div>
             </Modal>
 
+            {/* Archive Order Modal */}
+            <Modal isOpen={isArchiveOpen} onClose={() => setIsArchiveOpen(false)} showCloseButton>
+                <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-semibold text-gray-900">Confirm Archive</h2>
+                        <CloseButton label="Close" onClose={() => setIsArchiveOpen(false)} />
+                    </div>
+
+                    <p className="text-sm text-gray-600">
+                        Are you sure you want to archive order <span className="font-semibold text-gray-800">#{selectedArchiveOrderId}</span>?
+                        <br />
+                        Archived orders will be hidden from active list but kept for history.
+                    </p>
+
+                    <div className="flex items-center justify-end gap-3 pt-2">
+                        <button
+                            type="button"
+                            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                            onClick={() => setIsArchiveOpen(false)}
+                            disabled={archiveLoading}
+                        >
+                            No
+                        </button>
+
+                        <button
+                            type="button"
+                            className="px-4 py-2 bg-gray-800 hover:bg-gray-900 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={handleConfirmArchiveOrder}
+                            disabled={archiveLoading}
+                        >
+                            {archiveLoading ? "Archiving..." : "Yes, Archive"}
+                        </button>
+                    </div>
+                </div>
+            </Modal>
+
             {/* Edit Order Modal */}
             <Modal isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} showCloseButton>
+
                 <form onSubmit={handleSubmitEdit} className="space-y-4">
 
 

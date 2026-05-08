@@ -34,6 +34,10 @@ const OrderService = {
     cancelOrder: async (orderId: string | number) => {
         return AxiosInstance.put(`/orders/cancelOrder/${orderId}`, {});
     },
+
+    archiveOrder: async (orderId: string | number) => {
+        return AxiosInstance.put(`/orders/archiveOrder/${orderId}`, {});
+    },
 };
 
 
