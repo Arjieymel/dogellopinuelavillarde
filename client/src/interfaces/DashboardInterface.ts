@@ -8,6 +8,7 @@ export type DashboardSummaryResponse = {
         todaySales: number;
         availableGallons: number;
         lowStocks: number;
+        cancelledOrders: number;
     };
     salesChart: {
         labels: string[];

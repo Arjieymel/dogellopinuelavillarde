@@ -72,26 +72,67 @@ const DashboardMainPage = () => {
                 </div>
 
                 {/* SUMMARY CARDS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
 
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
-                        <div className="text-sm text-gray-500">Total Customers</div>
-                        <div className="text-3xl font-semibold text-blue-700">
-                            {loading ? <Spinner size="md" /> : data?.summary.totalCustomers ?? 0}
+                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-sm text-gray-500">Total Customers</div>
+                                <div className="text-3xl font-semibold text-blue-700">
+                                    {loading ? <Spinner size="md" /> : data?.summary.totalCustomers ?? 0}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
-                        <div className="text-sm text-gray-500">Total Orders</div>
-                        <div className="text-3xl font-semibold text-blue-700">
-                            {loading ? <Spinner size="md" /> : data?.summary.totalOrders ?? 0}
+                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-sm text-gray-500">Total Orders</div>
+                                <div className="text-3xl font-semibold text-blue-700">
+                                    {loading ? <Spinner size="md" /> : data?.summary.totalOrders ?? 0}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
-                        <div className="text-sm text-gray-500">Pending Deliveries</div>
-                        <div className="text-3xl font-semibold text-blue-700">
-                            {loading ? <Spinner size="md" /> : data?.summary.pendingDeliveries ?? 0}
+                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-sm text-gray-500">Pending Deliveries</div>
+                                <div className="text-3xl font-semibold text-blue-700">
+                                    {loading ? <Spinner size="md" /> : data?.summary.pendingDeliveries ?? 0}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Cancelled Orders Card */}
+                    <div className="rounded-xl bg-white border border-red-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="text-sm text-red-700 font-medium">Cancelled Orders</div>
+                                <div className="text-3xl font-semibold text-red-700">
+                                    {loading ? <Spinner size="md" /> : data?.summary.cancelledOrders ?? 0}
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-50 border border-red-200 text-red-700">
+                                {/* X Circle */}
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="w-5 h-5"
+                                >
+                                    <circle cx="12" cy="12" r="10" />
+                                    <path d="M15 9l-6 6" />
+                                    <path d="M9 9l6 6" />
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
@@ -105,7 +146,7 @@ const DashboardMainPage = () => {
                     {/* DELIVERY STATUS */}
                     <div className="rounded-xl bg-gray-200 border border-gray-200 p-4 shadow-sm">
                         <h2 className="font-semibold text-gray-900">
-                            Delivery Status
+                            Delivery Status Today
                         </h2>
 
                         <div className="mt-3 space-y-2">
