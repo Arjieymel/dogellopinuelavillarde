@@ -1,4 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { Droplets, LayoutGrid, BadgeCheck, XCircle, CircleDotDashed, DollarSign } from "lucide-react";
+
 import DashboardService from "../../Services/DashboardService";
 import Spinner from "../../components/Spinner/Spinner";
 import ToastMessage from "../../components/ToastMessage/ToastMessage";
@@ -17,7 +19,7 @@ const DashboardMainPage = () => {
     const [data, setData] = useState<DashboardSummaryResponse | null>(null);
 
     useEffect(() => {
-        document.title = "Dashboard";
+        document.title = "Water Refilling Management";
     }, []);
 
     useEffect(() => {
@@ -25,7 +27,6 @@ const DashboardMainPage = () => {
             try {
                 setLoading(true);
                 const res = await DashboardService.summary();
-
                 if (res.status >= 200 && res.status < 300) {
                     setData(res.data as DashboardSummaryResponse);
                 } else {
@@ -37,237 +38,206 @@ const DashboardMainPage = () => {
                 setLoading(false);
             }
         };
-
         run();
     }, [showToastMessage]);
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case "Delivered":
-                return "text-green-700 font-semibold";
-            case "Processing":
-                return "text-yellow-700 font-semibold";
-            case "Pending":
-                return "text-blue-700 font-semibold";
-            default:
-                return "text-gray-700 font-semibold";
+    const deliveryCounts = useMemo(() => {
+        const delivered = data?.deliveryStatusSummary?.find((x) => x.delivery_status === "Delivered")?.total;
+        return {
+            delivered: typeof delivered === "string" ? Number(delivered) : (delivered ?? 0),
+            cancelled: data?.summary.cancelledOrders ?? 0,
+        };
+    }, [data]);
+
+    const statCards = [
+        {
+            label: "Total Customers",
+            value: loading ? null : data?.summary.totalCustomers ?? 0,
+            iconBg: "bg-cyan-50 border-cyan-100 text-cyan-700",
+            icon: LayoutGrid,
+        },
+        {
+            label: "Total Orders",
+            value: loading ? null : data?.summary.totalOrders ?? 0,
+            iconBg: "bg-blue-50 border-blue-100 text-blue-700",
+            icon: Droplets,
+        },
+        {
+            label: "Pending Deliveries",
+            value: loading ? null : data?.summary.pendingDeliveries ?? 0,
+            iconBg: "bg-indigo-50 border-indigo-100 text-indigo-700",
+            icon: CircleDotDashed,
+        },
+    ];
+
+    const getBadge = (status: string) => {
+        const normalized = status.trim();
+        if (normalized === "Delivered") {
+            return "bg-green-50 text-green-700 border-green-200";
         }
+        if (normalized === "Cancelled" || normalized === "Canceled") {
+            return "bg-red-50 text-red-700 border-red-200";
+        }
+        if (normalized === "Pending") {
+            return "bg-yellow-50 text-yellow-700 border-yellow-200";
+        }
+        return "bg-yellow-50 text-yellow-700 border-yellow-200";
     };
 
     return (
         <>
-            <ToastMessage
-                message={toastMessage}
-                isVisible={toastMessageIsVisible}
-                onClose={closeToastMessage}
-            />
+            <ToastMessage message={toastMessage} isVisible={toastMessageIsVisible} onClose={closeToastMessage} />
 
-            <div className="space-y-4">
-
-                {/* HEADER */}
-                <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold text-gray-900">
-                        Water Refilling Management
-                    </h1>
-                </div>
-
-                {/* SUMMARY CARDS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="text-sm text-gray-500">Total Customers</div>
-                                <div className="text-3xl font-semibold text-blue-700">
-                                    {loading ? <Spinner size="md" /> : data?.summary.totalCustomers ?? 0}
-                                </div>
-                            </div>
+            <div className="min-h-[calc(100vh-5rem)]">
+                {/* Page shell */}
+                <div className="rounded-2xl bg-gradient-to-b from-blue-600/10 via-cyan-600/5 to-transparent border border-blue-200/60 p-5 sm:p-6 shadow-sm">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Water Refilling Management</h1>
+                            <p className="text-sm text-gray-600 mt-1">Overview of customers, orders, deliveries and sales.</p>
                         </div>
                     </div>
 
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="text-sm text-gray-500">Total Orders</div>
-                                <div className="text-3xl font-semibold text-blue-700">
-                                    {loading ? <Spinner size="md" /> : data?.summary.totalOrders ?? 0}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="text-sm text-gray-500">Pending Deliveries</div>
-                                <div className="text-3xl font-semibold text-blue-700">
-                                    {loading ? <Spinner size="md" /> : data?.summary.pendingDeliveries ?? 0}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Cancelled Orders Card */}
-                    <div className="rounded-xl bg-white border border-red-200 p-4 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <div className="text-sm text-red-700 font-medium">Cancelled Orders</div>
-                                <div className="text-3xl font-semibold text-red-700">
-                                    {loading ? <Spinner size="md" /> : data?.summary.cancelledOrders ?? 0}
-                                </div>
-                            </div>
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-50 border border-red-200 text-red-700">
-                                {/* X Circle */}
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="w-5 h-5"
+                    {/* Top cards */}
+                    <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {statCards.map((c) => {
+                            const Icon = c.icon;
+                            return (
+                                <div
+                                    key={c.label}
+                                    className="group rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all duration-300 p-5"
                                 >
-                                    <circle cx="12" cy="12" r="10" />
-                                    <path d="M15 9l-6 6" />
-                                    <path d="M9 9l6 6" />
-                                </svg>
+                                    <div className="flex items-start justify-between">
+                                        <div className="space-y-1">
+                                            <p className="text-sm text-gray-500">{c.label}</p>
+                                            <div className="text-3xl font-bold text-blue-700">
+                                                {loading ? <Spinner size="md" /> : c.value}
+                                            </div>
+                                        </div>
+                                        <div
+                                            className={`w-12 h-12 rounded-full border flex items-center justify-center ${c.iconBg} transition-colors group-hover:scale-105`}
+                                        >
+                                            <Icon className="w-6 h-6" />
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Main sections */}
+                    <div className="mt-5 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* Delivery Status */}
+                        <div className="rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow p-5">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <h2 className="font-bold text-gray-900">Delivery Status</h2>
+                                    <p className="text-sm text-gray-600 mt-1">Counts from recent deliveries</p>
+                                </div>
+                            </div>
+
+                            <div className="mt-5 grid grid-cols-2 gap-3">
+                                <div className="rounded-xl bg-green-50 border border-green-100 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-medium text-green-700">Delivered</p>
+                                        <BadgeCheck className="w-5 h-5 text-green-700" />
+                                    </div>
+                                    <div className="mt-2 text-3xl font-extrabold text-green-700">
+                                        {loading ? <Spinner size="sm" /> : deliveryCounts.delivered}
+                                    </div>
+                                </div>
+                                <div className="rounded-xl bg-red-50 border border-red-100 p-4">
+                                    <div className="flex items-center justify-between">
+                                        <p className="text-sm font-medium text-red-700">Cancelled</p>
+                                        <XCircle className="w-5 h-5 text-red-700" />
+                                    </div>
+                                    <div className="mt-2 text-3xl font-extrabold text-red-700">
+                                        {loading ? <Spinner size="sm" /> : deliveryCounts.cancelled}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Today Sales */}
+                        <div className="rounded-2xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-sm hover:shadow-lg transition-shadow p-5 relative overflow-hidden">
+                            <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-white/10 blur-xl" />
+                            <div className="relative">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm text-white/90">Today&apos;s Sales</p>
+                                        <p className="text-xs text-white/75 mt-1">Based on completed orders today</p>
+                                    </div>
+                                    <div className="w-12 h-12 rounded-full bg-white/15 border border-white/20 flex items-center justify-center">
+                                        <DollarSign className="w-6 h-6 text-white" />
+
+                                    </div>
+                                </div>
+                                <div className="mt-4 text-4xl font-extrabold tracking-tight">
+                                    {loading ? <Spinner size="md" /> : `₱ ${Number(data?.summary.todaySales ?? 0).toFixed(2)}`}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Recent Orders Table */}
+                        <div className="lg:col-span-2 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow p-5">
+                            <div className="flex items-center justify-between">
+                                <h2 className="font-bold text-gray-900">Recent Orders</h2>
+                            </div>
+
+                            <div className="mt-4 overflow-x-auto">
+                                <table className="min-w-full text-sm">
+                                    <thead className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white">
+                                        <tr>
+                                            <th className="px-4 py-3 text-left font-semibold">#</th>
+                                            <th className="px-4 py-3 text-left font-semibold">Customer</th>
+                                            <th className="px-4 py-3 text-left font-semibold">Product</th>
+                                            <th className="px-4 py-3 text-left font-semibold">Quantity</th>
+                                            <th className="px-4 py-3 text-left font-semibold">Total</th>
+                                            <th className="px-4 py-3 text-left font-semibold">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-100">
+                                        {(data?.recentOrders ?? []).map((o, idx) => (
+                                            <tr
+                                                key={o.order_id}
+                                                className="hover:bg-blue-50/50 transition-colors"
+                                            >
+                                                <td className="px-4 py-3 text-gray-800">{idx + 1}</td>
+                                                <td className="px-4 py-3 text-gray-800">{o.customer?.fullname ?? "-"}</td>
+                                                <td className="px-4 py-3 text-gray-800">{o.product?.product_name ?? "-"}</td>
+                                                <td className="px-4 py-3 text-gray-800">{o.quantity}</td>
+                                                <td className="px-4 py-3 text-gray-800">{Number(o.total_amount).toFixed(2)}</td>
+                                                <td className="px-4 py-3">
+                                                    <span
+                                                        className={`inline-flex items-center px-3 py-1 rounded-full border text-xs font-semibold ${getBadge(o.status)}`}
+                                                    >
+                                                        {o.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+
+                                        {loading && (
+                                            <tr>
+                                                <td className="px-4 py-10 text-center" colSpan={6}>
+                                                    <Spinner size="md" />
+                                                </td>
+                                            </tr>
+                                        )}
+
+                                        {!loading && (data?.recentOrders?.length ?? 0) === 0 && (
+                                            <tr>
+                                                <td className="px-4 py-10 text-center text-gray-500" colSpan={6}>
+                                                    No recent orders
+                                                </td>
+                                            </tr>
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-
-
-
-                </div>
-
-                {/* MAIN CONTENT */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-
-                    {/* DELIVERY STATUS */}
-                    <div className="rounded-xl bg-gray-200 border border-gray-200 p-4 shadow-sm">
-                        <h2 className="font-semibold text-gray-900">
-                            Delivery Status Today
-                        </h2>
-
-                        <div className="mt-3 space-y-2">
-                            {(data?.deliveryStatusSummary ?? []).map((row: any, i: number) => (
-                                <div key={i} className="flex items-center justify-between text-sm">
-                                    <span className="text-gray-600">
-                                        {row.delivery_status}
-                                    </span>
-                                    <span className="font-semibold text-blue-700">
-                                        {row.total}
-                                    </span>
-                                </div>
-                            ))}
-
-                            {!data?.deliveryStatusSummary?.length && !loading && (
-                                <div className="text-sm text-gray-500">No data</div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* TODAY'S SALES (REPLACED TOP SELLING PRODUCTS) */}
-                    <div className="rounded-xl bg-gray-200 border border-gray-200 p-4 shadow-sm">
-                        <h2 className="font-semibold text-gray-900">
-                            Today&apos;s Sales
-                        </h2>
-
-                        <div className="mt-3 space-y-2">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-600">
-                                    Total Sales
-                                </span>
-
-                                <span className="font-semibold text-blue-700">
-                                    {loading ? (
-                                        <Spinner size="sm" />
-                                    ) : (
-                                        Number(data?.summary.todaySales ?? 0).toFixed(2)
-                                    )}
-                                </span>
-                            </div>
-
-                            {!loading && (
-                                <div className="text-xs text-gray-500 mt-2">
-                                    Based on completed orders today
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* RECENT ORDERS */}
-                    <div className="lg:col-span-2 rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
-                        <h2 className="font-semibold text-gray-900">
-                            Recent Orders
-                        </h2>
-
-                        <div className="mt-4 overflow-x-auto">
-                            <table className="min-w-full text-sm">
-
-                                <thead className="bg-blue-600 text-white">
-                                    <tr>
-                                        <th className="px-4 py-2 text-left">#</th>
-                                        <th className="px-4 py-2 text-left">Customer</th>
-                                        <th className="px-4 py-2 text-left">Product</th>
-                                        <th className="px-4 py-2 text-left">Quantity</th>
-                                        <th className="px-4 py-2 text-left">Total</th>
-                                        <th className="px-4 py-2 text-left">Status</th>
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    {(data?.recentOrders ?? []).map((o, i) => (
-                                        <tr key={o.order_id} className="border-b last:border-b-0">
-
-                                            <td className="px-4 py-2">{i + 1}</td>
-
-                                            <td className="px-4 py-2 text-gray-700">
-                                                {o.customer?.fullname}
-                                            </td>
-
-                                            <td className="px-4 py-2 text-gray-700">
-                                                {o.product?.product_name}
-                                            </td>
-
-                                            <td className="px-4 py-2 text-gray-700">
-                                                {o.quantity}
-                                            </td>
-
-                                            <td className="px-4 py-2 text-gray-700">
-                                                {Number(o.total_amount).toFixed(2)}
-                                            </td>
-
-                                            <td className="px-4 py-2">
-                                                <span className={getStatusColor(o.status)}>
-                                                    {o.status}
-                                                </span>
-                                            </td>
-
-                                        </tr>
-                                    ))}
-
-                                    {loading && (
-                                        <tr>
-                                            <td className="px-4 py-8 text-center" colSpan={6}>
-                                                <Spinner size="md" />
-                                            </td>
-                                        </tr>
-                                    )}
-
-                                    {!loading && (data?.recentOrders?.length ?? 0) === 0 && (
-                                        <tr>
-                                            <td className="px-4 py-8 text-center text-gray-500" colSpan={6}>
-                                                No recent orders
-                                            </td>
-                                        </tr>
-                                    )}
-                                </tbody>
-
-                            </table>
-                        </div>
-                    </div>
-
                 </div>
             </div>
         </>
@@ -275,3 +245,4 @@ const DashboardMainPage = () => {
 };
 
 export default DashboardMainPage;
+

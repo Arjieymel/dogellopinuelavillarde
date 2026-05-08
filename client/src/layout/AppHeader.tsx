@@ -3,6 +3,7 @@ import { useHeader } from "../contexts/HeaderContext";
 import { useSidebar } from "../contexts/SidebarContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useEffect, useState, type FormEvent } from "react";
+import { Droplet } from "lucide-react";
 
 const AppHeader = () => {
     const { isOpen, toggleUserMenu } = useHeader();
@@ -52,7 +53,7 @@ const AppHeader = () => {
                 <div className="fixed inset-0 z-40" onClick={toggleUserMenu} />
             )}
 
-            <nav className="fixed top-0 z-50 w-full bg-blue-600 border-b border-blue-700 shadow-md">
+            <nav className="fixed top-0 z-50 w-full bg-blue-600 border-b border-blue-700 shadow-md bg-linear-to-b from-blue-950 to-blue-700">
                 <div className="px-3 py-3 lg:px-5 lg:pl-3">
                     <div className="flex items-center justify-between">
 
@@ -83,17 +84,15 @@ const AppHeader = () => {
                                 </svg>
                             </button>
 
-                            <a href="#" className="flex ms-2 md:me-24 items-center">
-                                <img
-                                    src="https://flowbite.com/docs/images/logo.svg"
-                                    className="h-6 me-3"
-                                    alt="Logo"
-                                />
-                                <span className="self-center text-lg font-semibold text-white whitespace-nowrap">
-                                    Flowbite
-                                </span>
-                            </a>
-
+                            <div className="flex items-center gap-4">
+                                <div className="ml-2 w-11 h-11 rounded-2xl bg-white/10 border border-white/15 flex items-center justify-center shadow-lg">
+                                    <Droplet className="w-6 h-6 text-cyan-200" />
+                                </div>
+                                <div>
+                                    <p className="text-white font-bold leading-tight">WaterFlow</p>
+                                    <p className="text-cyan-100/80 text-xs -mt-0.5">Management</p>
+                                </div>
+                            </div>
                         </div>
 
                         {/* RIGHT SIDE */}

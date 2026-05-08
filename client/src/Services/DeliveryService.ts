@@ -4,13 +4,13 @@ export type DeliveryPayload = {
     order_id: number;
     driver_name: string;
     delivery_date: string; // YYYY-MM-DD
-    delivery_status: "Pending" | "Out for Delivery" | "Delivered";
+    delivery_status: "Pending" | "Out for Delivery" | "Delivered" | "Cancelled";
 };
 
 export type DeliveryUpdatePayload = {
     driver_name: string;
     delivery_date: string;
-    delivery_status: "Pending" | "Out for Delivery" | "Delivered";
+    delivery_status: "Pending" | "Out for Delivery" | "Delivered" | "Cancelled";
 };
 
 const DeliveryService = {
