@@ -53,8 +53,8 @@ const DashboardMainPage = () => {
                     <h1 className="text-2xl font-bold text-gray-900">Water Refilling Management</h1>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                    <div className="rounded-xl bg-white border border-gray-200 p-4  shadow-sm">
                         <div className="text-sm text-gray-500">Total Customers</div>
                         <div className="text-3xl font-semibold text-blue-700">
                             {loading ? <Spinner size="md" /> : data?.summary.totalCustomers ?? 0}
@@ -78,25 +78,15 @@ const DashboardMainPage = () => {
                             {loading ? <Spinner size="md" /> : data?.summary.todaySales?.toFixed?.(2) ?? "0.00"}
                         </div>
                     </div>
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
-                        <div className="text-sm text-gray-500">Available Gallons</div>
-                        <div className="text-3xl font-semibold text-blue-700">
-                            {loading ? <Spinner size="md" /> : data?.summary.availableGallons ?? 0}
-                        </div>
-                    </div>
-                    <div className="rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
-                        <div className="text-sm text-gray-500">Low Stocks</div>
-                        <div className="text-3xl font-semibold text-blue-700">
-                            {loading ? <Spinner size="md" /> : data?.summary.lowStocks ?? 0}
-                        </div>
-                    </div>
+
+
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div className="lg:col-span-2 rounded-xl bg-white border border-gray-200 p-4 shadow-sm">
                         <div className="flex items-center justify-between">
                             <h2 className="font-semibold text-gray-900">Sales Chart</h2>
-                            <span className="text-xs text-gray-500">Last 7 days</span>
+                            <span className="text-xs text-gray-500"></span>
                         </div>
 
                         <div className="mt-4">
@@ -163,7 +153,7 @@ const DashboardMainPage = () => {
                                         <td className="px-4 py-2 text-gray-700">{o.product?.product_name}</td>
                                         <td className="px-4 py-2 text-gray-700">{o.quantity}</td>
                                         <td className="px-4 py-2 text-gray-700">{Number(o.total_amount).toFixed(2)}</td>
-                                        <td className="px-4 py-2 text-gray-700">{o.status}</td>
+                                        <td className="px-4 py-2 text-green-700">{o.status}</td>
                                     </tr>
                                 ))}
                                 {loading && (

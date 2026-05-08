@@ -28,16 +28,17 @@ const LoginForm: FC<LoginFormProps> = ({ message }) => {
             setIsLoading(true);
 
             await login(username, password);
-            navigate('/genders');
+            navigate('/dashboard');
+
         } catch (error: any) {
-           if (error.response && error.response.status === 401) {
-            setError({});
-            message(error.response.data.message, true);
-} else if (error.response && error.response.status === 422) {
+            if (error.response && error.response.status === 401) {
+                setError({});
+                message(error.response.data.message, true);
+            } else if (error.response && error.response.status === 422) {
                 setError(error.response.data.errors);
                 message("Please check your input", true);
             } else {
-                console.error("An unexpected server error occurred during logging user in.", error );
+                console.error("An unexpected server error occurred during logging user in.", error);
                 message("Login failed. Please try again.", true);
             }
         } finally {
@@ -45,36 +46,36 @@ const LoginForm: FC<LoginFormProps> = ({ message }) => {
         }
     };
 
-  return (
-    <>
-    <form onSubmit={handleLogin}>
-         <div className="mb-4">
-            <FloatingLabelInput
-             label="Username" 
-             type="text"
-              name="username" 
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required 
-              autoFocus
-              errors={error.username}
-              />
-         </div>
-        <div className="mb-4">
-            <FloatingLabelInput 
-            label="Password"
-             type="password" 
-             name="password"
-             value={password}
-             onChange={(e) => setPassword(e.target.value)}
-             required
-             errors={error.password}
-             />
-        </div>
-        <SubmitButton className="w-full" label="Sign In" loading={isLoading} loadingLabel="Signing in..." />
-    </form>
-    </>
-  )
+    return (
+        <>
+            <form onSubmit={handleLogin}>
+                <div className="mb-4">
+                    <FloatingLabelInput
+                        label="Username"
+                        type="text"
+                        name="username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        required
+                        autoFocus
+                        errors={error.username}
+                    />
+                </div>
+                <div className="mb-4">
+                    <FloatingLabelInput
+                        label="Password"
+                        type="password"
+                        name="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        errors={error.password}
+                    />
+                </div>
+                <SubmitButton className="w-full" label="Sign In" loading={isLoading} loadingLabel="Signing in..." />
+            </form>
+        </>
+    )
 }
 
 export default LoginForm;

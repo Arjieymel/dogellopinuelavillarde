@@ -1,11 +1,8 @@
-# TODO
+- [x] Locate and remove Gender entry from sidebar navigation (AppSidebar.tsx)
+- [x] Remove all Gender routes (/genders, /gender/edit/:gender_id, /gender/delete/:gender_id) from AppRoutes.tsx
+- [x] Ensure React Router no longer renders or imports Gender pages from the route tree
+- [x] Run TypeScript build to confirm no broken imports or route references
+- [x] Confirm no Gender sidebar/link/router entries remain
 
-## Orders module
-- [ ] Implement OrdersMainPage UI (search + infinite scroll, table)
-- [ ] Implement Add Order modal (customer_id, product_id, quantity)
-- [ ] Implement Edit Order modal (update status: Pending/Processing/Delivered)
-- [ ] Implement Delete Order modal only if backend/service supports it (otherwise omit)
-- [ ] Add toast messages + loading + error handling (422 validation)
-- [ ] Verify build/typecheck
-- [ ] Smoke test `/orders` route
+
 

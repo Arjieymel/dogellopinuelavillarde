@@ -12,8 +12,6 @@ const AppSidebar = () => {
         { path: '/deliveries', text: 'Deliveries' },
         { path: '/reports', text: 'Reports' },
 
-        // Legacy modules kept for now
-        { path: '/genders', text: 'Genders' },
         { path: '/users', text: 'Users' },
     ];
 
