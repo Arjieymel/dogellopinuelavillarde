@@ -23,8 +23,28 @@ const CustomersMainPage = () => {
 
     return (
         <>
-
             <ToastMessage message={message} isVisible={isVisible} onClose={closeToastMessage} />
+
+            <div className="min-h-[calc(100vh-5rem)]">
+                <div className="rounded-2xl bg-linear-to-b from-blue-600/10 via-cyan-600/5 to-transparent border border-blue-200/60 p-5 sm:p-6 shadow-sm">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Customer Management</h1>
+                            <p className="text-sm text-gray-600 mt-1">Manage customers, contact details, and addresses.</p>
+                        </div>
+                    </div>
+
+                    <div className="mt-5">
+                        <CustomerList
+                            refreshKey={refresh}
+                            onAddCustomer={openAdd}
+                            onEditCustomer={openEditCustomer}
+                            onDeleteCustomer={openDeleteCustomer}
+                        />
+                    </div>
+                </div>
+            </div>
 
             <AddCustomerModal
                 isOpen={isAddOpen}
@@ -48,16 +68,10 @@ const CustomersMainPage = () => {
                 refreshKey={handleRefresh}
                 onCustomerDeleted={showToastMessage}
             />
-
-            <CustomerList
-                refreshKey={refresh}
-                onAddCustomer={openAdd}
-                onEditCustomer={openEditCustomer}
-                onDeleteCustomer={openDeleteCustomer}
-            />
         </>
     );
 };
 
 export default CustomersMainPage;
+
 

@@ -2,7 +2,7 @@ import { useEffect, useState, type FC } from "react";
 import Modal from "../../../components/Modal";
 import FloatingLabelInput from "../../../components/Input/FloatingLabelInput";
 import SubmitButton from "../../../components/Button/SubmitButton";
-import CloseButton from "../../../components/Button/CloseButton";
+
 
 import CustomerService, { type CustomerPayload } from "../../../Services/CustomerService";
 import Spinner from "../../../components/Spinner/Spinner";
@@ -55,7 +55,7 @@ const AddCustomerModal: FC<{
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="flex items-center justify-between">
                     <h2 className="text-lg font-semibold text-gray-900">Add Customer</h2>
-                    <CloseButton label="Close" onClose={onClose} />
+
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">

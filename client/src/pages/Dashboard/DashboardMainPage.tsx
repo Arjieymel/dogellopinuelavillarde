@@ -90,7 +90,7 @@ const DashboardMainPage = () => {
 
             <div className="min-h-[calc(100vh-5rem)]">
                 {/* Page shell */}
-                <div className="rounded-2xl bg-gradient-to-b from-blue-600/10 via-cyan-600/5 to-transparent border border-blue-200/60 p-5 sm:p-6 shadow-sm">
+                <div className="rounded-2xl bg-linear-to-b from-blue-600/10 via-cyan-600/5 to-transparent border border-blue-200/60 p-5 sm:p-6 shadow-sm">
                     {/* Header */}
                     <div className="flex items-center justify-between gap-4">
                         <div>
@@ -160,7 +160,7 @@ const DashboardMainPage = () => {
                         </div>
 
                         {/* Today Sales */}
-                        <div className="rounded-2xl bg-gradient-to-br from-green-500 to-green-600 text-white shadow-sm hover:shadow-lg transition-shadow p-5 relative overflow-hidden">
+                        <div className="rounded-2xl bg-linear-to-br from-green-500 to-green-600 text-white shadow-sm hover:shadow-lg transition-shadow p-5 relative overflow-hidden">
                             <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-white/10 blur-xl" />
                             <div className="relative">
                                 <div className="flex items-center justify-between">
@@ -187,7 +187,7 @@ const DashboardMainPage = () => {
 
                             <div className="mt-4 overflow-x-auto">
                                 <table className="min-w-full text-sm">
-                                    <thead className="bg-gradient-to-r from-blue-600 to-cyan-500 text-white">
+                                    <thead className="bg-linear-to-r from-blue-600 to-cyan-500 text-white">
                                         <tr>
                                             <th className="px-4 py-3 text-left font-semibold">#</th>
                                             <th className="px-4 py-3 text-left font-semibold">Customer</th>

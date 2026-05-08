@@ -284,126 +284,146 @@ const DeliveriesMainPage = () => {
         <>
             <ToastMessage message={toastMessage} isVisible={toastMessageIsVisible} onClose={closeToastMessage} />
 
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-                <div ref={tableRef} className="relative max-w-full max-h-[calc(100vh-8.5rem)] overflow-x-auto">
-                    <Table>
-                        <caption className="mb-4">
-                            <div className="border-b border-gray-100">
-                                <div className="p-4 flex justify-between">
-                                    <div className="w-64">
-                                        <FloatingLabelInput
-                                            label="Search"
-                                            type="text"
-                                            name="search"
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            autoFocus
-                                        />
-                                    </div>
+            <div className="min-h-[calc(100vh-6rem)]">
+                {/* Page shell */}
+                <div className="rounded-2xl bg-linear-to-b from-blue-600/10 via-cyan-600/5 to-transparent border border-blue-200/60 p-5 sm:p-6 shadow-sm">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Deliveries Management</h1>
+                            <p className="text-sm text-gray-600 mt-1">Manage delivery assignments and update delivery statuses.</p>
+                        </div>
+                    </div>
 
-                                    <button
-                                        type="button"
-                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition cursor-pointer"
-                                        onClick={openAdd}
-                                    >
-                                        Add Delivery
-                                    </button>
+                    {/* Top controls */}
+                    <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        {/* Search */}
+                        <div className="lg:col-span-2 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all p-5">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="w-full">
+                                    <FloatingLabelInput
+                                        label="Search"
+                                        type="text"
+                                        name="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        autoFocus
+                                    />
                                 </div>
                             </div>
-                        </caption>
+                        </div>
 
-                        <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs z-10">
-                            <TableRow>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-center">No.</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">Driver</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">Delivery Date</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-center">Status</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">Order</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-center">Action</TableCell>
-                            </TableRow>
-                        </TableHeader>
+                        {/* Add */}
+                        <div className="rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all p-5 flex items-center justify-center">
+                            <button
+                                type="button"
+                                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition cursor-pointer whitespace-nowrap"
+                                onClick={openAdd}
+                            >
+                                Add Delivery
+                            </button>
+                        </div>
+                    </div>
 
-                        <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm">
-                            {deliveries.length > 0 ? (
-                                deliveries.map((d, idx) => (
-                                    <TableRow className="hover:bg-gray-100" key={d.delivery_id}>
-                                        <TableCell className="px-4 py-3 text-center">{idx + 1}</TableCell>
-                                        <TableCell className="px-4 py-3 text-start">{d.driver_name}</TableCell>
-                                        <TableCell className="px-4 py-3 text-start">{d.delivery_date}</TableCell>
-                                        <TableCell className="px-4 py-3 text-center">
-                                            <span
-                                                className={
-                                                    d.delivery_status === "Delivered"
-                                                        ? "text-green-700 font-semibold"
-                                                        : d.delivery_status === "Out for Delivery"
-                                                            ? "text-yellow-700 font-semibold"
-                                                            : "text-blue-700 font-semibold"
-                                                }
-                                            >
-                                                {d.delivery_status}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="px-4 py-3 text-start">
-                                            <div>
-                                                <span className="font-semibold">#{d.order_id}</span>
-                                            </div>
-                                            <div className="text-xs text-gray-400">{d.order?.customer?.fullname ?? "-"}</div>
-                                        </TableCell>
-                                        <TableCell className="px-4 py-3 text-center">
-                                            <div className="flex justify-center gap-4">
-                                                <button type="button" className="text-green-600 hover:underline" onClick={() => openEdit(d)}>
-                                                    Update
-                                                </button>
-
-
-                                                {(d.delivery_status === "Pending" || d.delivery_status === "Out for Delivery") && (
-                                                    <button
-                                                        type="button"
-                                                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onClick={() => {
-                                                            setSelectedCancelDeliveryId(d.delivery_id);
-                                                            setIsCancelOpen(true);
-                                                        }}
-                                                        disabled={cancelLoading && selectedCancelDeliveryId === d.delivery_id}
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                )}
-
-                                                {(d.delivery_status === "Delivered" || d.delivery_status === "Cancelled") && (
-                                                    <button
-                                                        type="button"
-                                                        className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onClick={() => {
-                                                            setSelectedArchiveDeliveryId(d.delivery_id);
-                                                            setIsArchiveOpen(true);
-                                                        }}
-                                                        disabled={archiveLoading && selectedArchiveDeliveryId === d.delivery_id}
-                                                    >
-                                                        {archiveLoading && selectedArchiveDeliveryId === d.delivery_id ? "Archiving..." : "Archive"}
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </TableCell>
-
-
+                    {/* Table section */}
+                    <div className="mt-5 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow p-0 overflow-hidden">
+                        <div ref={tableRef} className="relative max-w-full max-h-[calc(100vh-11rem)] overflow-x-auto">
+                            <Table>
+                                <TableHeader className="border-b border-gray-200 bg-linear-to-r from-blue-600 to-cyan-500 sticky top-0 text-white text-xs z-10">
+                                    <TableRow>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-center">No.</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-start">Driver</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-start">Delivery Date</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-center">Status</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-start">Order</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-center">Action</TableCell>
                                     </TableRow>
-                                ))
-                            ) : !loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="px-4 py-3 text-center font-medium">
-                                        No Records found
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={6} className="px-4 py-3 text-center">
-                                        <Spinner size="md" />
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                                </TableHeader>
+
+                                <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm">
+                                    {deliveries.length > 0 ? (
+                                        deliveries.map((d, idx) => (
+                                            <TableRow className="hover:bg-blue-50/40 transition-colors" key={d.delivery_id}>
+                                                <TableCell className="px-4 py-3 text-center">{idx + 1}</TableCell>
+                                                <TableCell className="px-4 py-3 text-start">{d.driver_name}</TableCell>
+                                                <TableCell className="px-4 py-3 text-start">{d.delivery_date}</TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
+                                                    <span
+                                                        className={
+                                                            d.delivery_status === "Delivered"
+                                                                ? "text-green-700 font-semibold"
+                                                                : d.delivery_status === "Out for Delivery"
+                                                                    ? "text-yellow-700 font-semibold"
+                                                                    : "text-blue-700 font-semibold"
+                                                        }
+                                                    >
+                                                        {d.delivery_status}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 text-start">
+                                                    <div>
+                                                        <span className="font-semibold">#{d.order_id}</span>
+                                                    </div>
+                                                    <div className="text-xs text-gray-400">{d.order?.customer?.fullname ?? "-"}</div>
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
+                                                    <div className="flex justify-center gap-3">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-green-700 bg-green-50 hover:bg-green-100 border border-green-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            onClick={() => openEdit(d)}
+                                                        >
+                                                            Update
+                                                        </button>
+
+                                                        {(d.delivery_status === "Pending" || d.delivery_status === "Out for Delivery") && (
+                                                            <button
+                                                                type="button"
+                                                                className="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                onClick={() => {
+                                                                    setSelectedCancelDeliveryId(d.delivery_id);
+                                                                    setIsCancelOpen(true);
+                                                                }}
+                                                                disabled={cancelLoading && selectedCancelDeliveryId === d.delivery_id}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        )}
+
+                                                        {(d.delivery_status === "Delivered" || d.delivery_status === "Cancelled") && (
+                                                            <button
+                                                                type="button"
+                                                                className="inline-flex items-center px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                onClick={() => {
+                                                                    setSelectedArchiveDeliveryId(d.delivery_id);
+                                                                    setIsArchiveOpen(true);
+                                                                }}
+                                                                disabled={archiveLoading && selectedArchiveDeliveryId === d.delivery_id}
+                                                            >
+                                                                {archiveLoading && selectedArchiveDeliveryId === d.delivery_id ? "Archiving..." : "Archive"}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : !loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="px-4 py-10 text-center font-medium">
+                                                No Records found
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={6} className="px-4 py-10 text-center">
+                                                <Spinner size="md" />
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -412,7 +432,7 @@ const DeliveriesMainPage = () => {
                 <form onSubmit={handleSubmitAdd} className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-gray-900">Add Delivery</h2>
-                        <CloseButton label="Close" onClose={() => setIsAddOpen(false)} />
+
                     </div>
 
                     {ordersLoading ? (
@@ -644,4 +664,5 @@ const DeliveriesMainPage = () => {
 };
 
 export default DeliveriesMainPage;
+
 

@@ -282,127 +282,146 @@ const OrdersMainPage = () => {
         <>
             <ToastMessage message={toastMessage} isVisible={toastMessageIsVisible} onClose={closeToastMessage} />
 
-            <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-                <div ref={tableRef} className="relative max-w-full max-h-[calc(100vh-8.5rem)] overflow-x-auto">
-                    <Table>
-                        <caption className="mb-4">
-                            <div className="border-b border-gray-100">
-                                <div className="p-4 flex justify-between">
-                                    <div className="w-64">
-                                        <FloatingLabelInput
-                                            label="Search"
-                                            type="text"
-                                            name="search"
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            autoFocus
-                                        />
-                                    </div>
+            <div className="min-h-[calc(100vh-6rem)]">
+                {/* Page shell */}
+                <div className="rounded-2xl bg-linear-to-b from-blue-600/10 via-cyan-600/5 to-transparent border border-blue-200/60 p-5 sm:p-6 shadow-sm">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900">Orders Management</h1>
+                            <p className="text-sm text-gray-600 mt-1">Create orders and manage their delivery status.</p>
+                        </div>
+                    </div>
 
-                                    <button
-                                        type="button"
-                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition cursor-pointer"
-                                        onClick={openAdd}
-                                    >
-                                        Add Order
-                                    </button>
+                    {/* Top controls */}
+                    <div className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+                        {/* Search (bigger - 2/3 width) */}
+                        <div className="lg:col-span-2 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all p-5">
+                            <div className="flex items-start justify-between gap-4">
+                                <div className="w-full">
+                                    <FloatingLabelInput
+                                        label="Search"
+                                        type="text"
+                                        name="search"
+                                        value={search}
+                                        onChange={(e) => setSearch(e.target.value)}
+                                        autoFocus
+                                    />
                                 </div>
                             </div>
-                        </caption>
+                        </div>
 
-                        <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs z-10">
-                            <TableRow>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-center">No.</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">Customer</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">Product</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">Quantity</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-start">Total Amount</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-center">Status</TableCell>
-                                <TableCell isHeader className="px-5 py-3 font-medium text-center">Action</TableCell>
+                        {/* Add Order (smaller - 1/3 width) */}
+                        <div className="rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-all p-5 flex items-center justify-center">
+                            <button
+                                type="button"
+                                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-lg transition cursor-pointer whitespace-nowrap"
+                                onClick={openAdd}
+                            >
+                                Add Order
+                            </button>
+                        </div>
 
-                            </TableRow>
-                        </TableHeader>
-
-                        <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm">
-                            {orders.length > 0 ? (
-                                orders.map((o, idx) => (
-                                    <TableRow className="hover:bg-gray-100" key={o.order_id}>
-                                        <TableCell className="px-4 py-3 text-center">{idx + 1}</TableCell>
-                                        <TableCell className="px-4 py-3 text-start">
-                                            {o.customer?.fullname ?? "-"}
-                                        </TableCell>
-                                        <TableCell className="px-4 py-3 text-start">
-                                            {o.product?.product_name ?? "-"}
-                                        </TableCell>
-                                        <TableCell className="px-4 py-3 text-start">{o.quantity}</TableCell>
-                                        <TableCell className="px-4 py-3 text-start">
-                                            {typeof o.total_amount === "string" ? o.total_amount : Number(o.total_amount).toFixed(2)}
-                                        </TableCell>
-                                        <TableCell className="px-4 py-3 text-center">
-                                            <span className={
-                                                o.status === "Delivered"
-                                                    ? "text-green-700 font-semibold"
-                                                    : o.status === "Processing"
-                                                        ? "text-yellow-700 font-semibold"
-                                                        : "text-blue-700 font-semibold"
-                                            }>
-                                                {o.status}
-                                            </span>
-                                        </TableCell>
-                                        <TableCell className="px-4 py-3 text-center">
-                                            <div className="flex justify-center gap-4">
-                                                <button type="button" className="text-green-600 hover:underline" onClick={() => openEdit(o)}>
-                                                    Update Status
-                                                </button>
-
-                                                {((o.status as string) === "Pending" || (o.status as string) === "Processing") && (
-                                                    <button
-                                                        type="button"
-                                                        className="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onClick={() => {
-                                                            setSelectedCancelOrderId(o.order_id);
-                                                            setIsCancelOpen(true);
-                                                        }}
-                                                        disabled={cancelLoading && selectedCancelOrderId === o.order_id}
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                )}
-
-                                                {(o.status === "Delivered" || o.status === ("Cancelled" as OrderStatus)) && (
-                                                    <button
-                                                        type="button"
-                                                        className="px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                                        onClick={() => {
-                                                            setSelectedArchiveOrderId(o.order_id);
-                                                            setIsArchiveOpen(true);
-                                                        }}
-                                                        disabled={archiveLoading && selectedArchiveOrderId === o.order_id}
-                                                    >
-                                                        {archiveLoading && selectedArchiveOrderId === o.order_id ? "Archiving..." : "Archive"}
-                                                    </button>
-                                                )}
-
-                                            </div>
-                                        </TableCell>
-
+                    </div>
+                    {/* Table section */}
+                    <div className="mt-5 rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow p-0 overflow-hidden">
+                        <div ref={tableRef} className="relative max-w-full max-h-[calc(100vh-11rem)] overflow-x-auto">
+                            <Table>
+                                <TableHeader className="border-b border-gray-200 bg-linear-to-r from-blue-600 to-cyan-500 sticky top-0 text-white text-xs z-10">
+                                    <TableRow>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-center">No.</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-start">Customer</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-start">Product</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-start">Quantity</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-start">Total Amount</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-center">Status</TableCell>
+                                        <TableCell isHeader className="px-5 py-3 font-medium text-center">Action</TableCell>
                                     </TableRow>
-                                ))
-                            ) : !loading ? (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="px-4 py-3 text-center font-medium">
-                                        No Records found
-                                    </TableCell>
-                                </TableRow>
-                            ) : (
-                                <TableRow>
-                                    <TableCell colSpan={7} className="px-4 py-3 text-center">
-                                        <Spinner size="md" />
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
+                                </TableHeader>
+
+                                <TableBody className="divide-y divide-gray-100 text-gray-500 text-sm">
+                                    {orders.length > 0 ? (
+                                        orders.map((o, idx) => (
+                                            <TableRow className="hover:bg-blue-50/40 transition-colors" key={o.order_id}>
+                                                <TableCell className="px-4 py-3 text-center">{idx + 1}</TableCell>
+                                                <TableCell className="px-4 py-3 text-start">{o.customer?.fullname ?? "-"}</TableCell>
+                                                <TableCell className="px-4 py-3 text-start">{o.product?.product_name ?? "-"}</TableCell>
+                                                <TableCell className="px-4 py-3 text-start">{o.quantity}</TableCell>
+                                                <TableCell className="px-4 py-3 text-start">
+                                                    {typeof o.total_amount === "string" ? o.total_amount : Number(o.total_amount).toFixed(2)}
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
+                                                    <span
+                                                        className={
+                                                            o.status === "Delivered"
+                                                                ? "text-green-700 font-semibold"
+                                                                : o.status === "Processing"
+                                                                    ? "text-yellow-700 font-semibold"
+                                                                    : "text-blue-700 font-semibold"
+                                                        }
+                                                    >
+                                                        {o.status}
+                                                    </span>
+                                                </TableCell>
+                                                <TableCell className="px-4 py-3 text-center">
+                                                    <div className="flex justify-center gap-3">
+                                                        <button
+                                                            type="button"
+                                                            className="inline-flex items-center px-3 py-2 text-green-700 bg-green-50 hover:bg-green-100 border border-green-100 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                            onClick={() => openEdit(o)}
+                                                        >
+                                                            Update Status
+                                                        </button>
+
+                                                        {((o.status as string) === "Pending" || (o.status as string) === "Processing") && (
+                                                            <button
+                                                                type="button"
+                                                                className="inline-flex items-center px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                onClick={() => {
+                                                                    setSelectedCancelOrderId(o.order_id);
+                                                                    setIsCancelOpen(true);
+                                                                }}
+                                                                disabled={cancelLoading && selectedCancelOrderId === o.order_id}
+                                                            >
+                                                                Cancel
+                                                            </button>
+                                                        )}
+
+                                                        {(o.status === "Delivered" || o.status === ("Cancelled" as OrderStatus)) && (
+                                                            <button
+                                                                type="button"
+                                                                className="inline-flex items-center px-3 py-2 bg-gray-700 hover:bg-gray-800 text-white font-medium rounded-lg shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                                                onClick={() => {
+                                                                    setSelectedArchiveOrderId(o.order_id);
+                                                                    setIsArchiveOpen(true);
+                                                                }}
+                                                                disabled={archiveLoading && selectedArchiveOrderId === o.order_id}
+                                                            >
+                                                                {archiveLoading && selectedArchiveOrderId === o.order_id ? "Archiving..." : "Archive"}
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    ) : !loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="px-4 py-10 text-center font-medium">
+                                                No Records found
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        <TableRow>
+                                            <TableCell colSpan={7} className="px-4 py-10 text-center">
+                                                <Spinner size="md" />
+                                            </TableCell>
+                                        </TableRow>
+                                    )}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -411,7 +430,7 @@ const OrdersMainPage = () => {
                 <form onSubmit={handleSubmitAdd} className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold text-gray-900">Add Order</h2>
-                        <CloseButton label="Close" onClose={() => setIsAddOpen(false)} />
+
                     </div>
 
                     {listsLoading ? (

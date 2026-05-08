@@ -22,6 +22,7 @@ const CustomerList: FC<CustomerListProps> = ({ onAddCustomer, onEditCustomer, on
     const [debouncedSearch, setDebouncedSearch] = useState("");
     const tableRef = useRef<HTMLDivElement>(null);
 
+
     const loadCustomers = async (targetPage: number, append = false, s = debouncedSearch) => {
         setLoading(true);
         try {
@@ -74,8 +75,8 @@ const CustomerList: FC<CustomerListProps> = ({ onAddCustomer, onEditCustomer, on
     }, [refreshKey, debouncedSearch]);
 
     return (
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-            <div ref={tableRef} className="relative max-w-full max-h-[calc(100vh-8.5rem)] overflow-x-auto">
+        <div className="overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm hover:shadow-lg transition-shadow">
+            <div ref={tableRef} className="relative max-w-full max-h-[calc(100vh-11.5rem)] overflow-x-auto">
                 <Table>
                     <caption className="mb-4">
                         <div className="border-b border-gray-100">
@@ -101,7 +102,7 @@ const CustomerList: FC<CustomerListProps> = ({ onAddCustomer, onEditCustomer, on
                         </div>
                     </caption>
 
-                    <TableHeader className="border-b border-gray-200 bg-blue-600 sticky top-0 text-white text-xs z-10">
+                    <TableHeader className="border-b border-gray-200 bg-linear-to-r from-blue-600 to-cyan-500 sticky top-0 text-white text-xs z-10">
                         <TableRow>
                             <TableCell isHeader className="px-5 py-3 font-medium text-center">No.</TableCell>
                             <TableCell isHeader className="px-5 py-3 font-medium text-start">Fullname</TableCell>
