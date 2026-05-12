@@ -27,10 +27,18 @@ const CustomerList: FC<CustomerListProps> = ({ onAddCustomer, onEditCustomer, on
         setLoading(true);
         try {
             const res = await CustomerService.loadCustomers(targetPage, s || undefined);
+
+            console.log("[CustomerList] loadCustomers response:", res.data);
+
             if (res.status === 200) {
                 const payload = res.data.customers;
+
+                // If backend returns Laravel paginator: { data, current_page, last_page, ... }
                 const data = payload?.data ?? payload ?? [];
                 const lp = payload?.last_page ?? payload?.lastPage ?? lastPage;
+
+                console.log("[CustomerList] customers parsed:", data);
+
                 setCustomers(append ? [...customers, ...data] : data);
                 setPage(targetPage);
                 setLastPage(lp);
@@ -107,6 +115,7 @@ const CustomerList: FC<CustomerListProps> = ({ onAddCustomer, onEditCustomer, on
                             <TableCell isHeader className="px-5 py-3 font-medium text-center">No.</TableCell>
                             <TableCell isHeader className="px-5 py-3 font-medium text-start">Fullname</TableCell>
                             <TableCell isHeader className="px-5 py-3 font-medium text-start">Contact Number</TableCell>
+                            <TableCell isHeader className="px-5 py-3 font-medium text-start">Email</TableCell>
                             <TableCell isHeader className="px-5 py-3 font-medium text-start">Address</TableCell>
                             <TableCell isHeader className="px-5 py-3 font-medium text-center">Action</TableCell>
                         </TableRow>
@@ -119,6 +128,7 @@ const CustomerList: FC<CustomerListProps> = ({ onAddCustomer, onEditCustomer, on
                                     <TableCell className="px-4 py-3 text-center">{idx + 1}</TableCell>
                                     <TableCell className="px-4 py-3 text-start">{c.fullname}</TableCell>
                                     <TableCell className="px-4 py-3 text-start">{c.contact_number}</TableCell>
+                                    <TableCell className="px-4 py-3 text-start">{(c.email ?? "").trim() ? c.email : "No Email"}</TableCell>
                                     <TableCell className="px-4 py-3 text-start">{c.address ?? "-"}</TableCell>
                                     <TableCell className="px-4 py-3 text-center">
                                         <div className="flex justify-center gap-4">

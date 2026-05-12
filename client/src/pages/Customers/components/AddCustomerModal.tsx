@@ -16,12 +16,12 @@ const AddCustomerModal: FC<{
 }> = ({ isOpen, onClose, refreshKey, onCustomerAdded }) => {
     const [loading, setLoading] = useState(false);
 
-    const [form, setForm] = useState<CustomerPayload>({ fullname: "", contact_number: "", address: "" });
+    const [form, setForm] = useState<CustomerPayload>({ fullname: "", contact_number: "", email: "", address: "" });
     const [errors, setErrors] = useState<CustomerFieldErrors>({});
 
     useEffect(() => {
         if (!isOpen) return;
-        setForm({ fullname: "", contact_number: "", address: "" });
+        setForm({ fullname: "", contact_number: "", email: "", address: "" });
         setErrors({});
     }, [isOpen]);
 
@@ -33,6 +33,7 @@ const AddCustomerModal: FC<{
             const res = await CustomerService.storeCustomer({
                 fullname: form.fullname.trim(),
                 contact_number: form.contact_number.trim(),
+                email: form.email?.trim() || "",
                 address: form.address?.trim() || "",
             });
 
@@ -76,6 +77,15 @@ const AddCustomerModal: FC<{
                         onChange={(e) => setForm((p) => ({ ...p, contact_number: e.target.value }))}
                     />
                     {errors.contact_number?.length ? <p className="text-xs text-red-600">{errors.contact_number[0]}</p> : null}
+
+                    <FloatingLabelInput
+                        label="Email"
+                        type="email"
+                        name="email"
+                        value={form.email ?? ""}
+                        onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                    />
+                    {errors.email?.length ? <p className="text-xs text-red-600">{errors.email[0]}</p> : null}
 
                     <FloatingLabelInput
                         label="Address"

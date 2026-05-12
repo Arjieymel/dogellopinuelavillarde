@@ -8,10 +8,11 @@ use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Services\OrderStatusWebhookService;
 
 class OrderController extends Controller
 {
-    public function cancelOrder(Request $request, Order $order)
+    public function cancelOrder(Request $request, Order $order, OrderStatusWebhookService $webhookService)
     {
         $validated = $request->validate([
             'status' => ['sometimes', 'string'],
@@ -33,11 +34,15 @@ class OrderController extends Controller
 
         $order->update(['status' => 'Cancelled']);
 
+        // Scenario 4: Order Cancelled
+        $webhookService->sendOrderStatus($order->fresh(['customer', 'product']), 'cancelled');
+
         return response()->json([
             'order' => $order->fresh(),
             'message' => 'Order cancelled successfully.',
         ], 200);
     }
+
 
     public function loadOrders(Request $request)
     {
@@ -70,7 +75,7 @@ class OrderController extends Controller
         ], 200);
     }
 
-    public function storeOrder(Request $request)
+    public function storeOrder(Request $request, OrderStatusWebhookService $webhookService)
     {
         $validated = $request->validate([
             'customer_id' => ['required', 'integer', 'exists:tbl_customers,customer_id'],
@@ -97,11 +102,13 @@ class OrderController extends Controller
         $quantity = (int) $validated['quantity'];
         $totalAmount = (float) $product->price * $quantity;
 
-        DB::transaction(function () use ($validated, $quantity, $totalAmount, $product) {
+        $createdOrder = null;
+
+        DB::transaction(function () use ($validated, $quantity, $totalAmount, $product, &$createdOrder) {
             // Decrement stock on order creation (as confirmed)
             $product->decrement('stock', $quantity);
 
-            Order::create([
+            $createdOrder = Order::create([
                 'customer_id' => $validated['customer_id'],
                 'product_id' => $validated['product_id'],
                 'quantity' => $quantity,
@@ -110,10 +117,16 @@ class OrderController extends Controller
             ]);
         });
 
+        if ($createdOrder) {
+            // Scenario 1: Order Created (Pending)
+            $webhookService->sendOrderStatus($createdOrder->fresh(['customer', 'product']), 'created');
+        }
+
         return response()->json([
             'message' => 'Order Successfully Created.',
         ], 200);
     }
+
 
     public function getOrder($orderId)
     {
@@ -141,20 +154,41 @@ class OrderController extends Controller
         ], 200);
     }
 
-    public function updateOrder(Request $request, Order $order)
+    public function updateOrder(Request $request, Order $order, OrderStatusWebhookService $webhookService)
     {
         $validated = $request->validate([
             'status' => ['required', 'in:Pending,Processing,Delivered'],
         ]);
 
-        $order->update([
-            'status' => $validated['status'],
-        ]);
+        $currentStatus = $order->status;
+        $newStatus = $validated['status'];
+
+        if ($currentStatus === $newStatus) {
+            return response()->json([
+                'order' => $order->fresh(),
+                'message' => 'Order status is already set.',
+            ], 200);
+        }
+
+        $order->update(['status' => $newStatus]);
+
+        // Only trigger on valid scenario transitions (and when status actually changed)
+        // Pending -> Processing  => confirmed
+        // Processing|Pending -> Delivered => delivered
+        if ($newStatus === 'Processing' && $currentStatus === 'Pending') {
+            $webhookService->sendOrderStatus($order->fresh(['customer', 'product']), 'confirmed');
+        }
+
+        if ($newStatus === 'Delivered') {
+            // Accept transitions from Processing or Pending
+            $webhookService->sendOrderStatus($order->fresh(['customer', 'product']), 'delivered');
+        }
 
         return response()->json([
             'order' => $order->fresh(),
             'message' => 'Order Successfully Updated.',
         ], 200);
     }
+
 }
 

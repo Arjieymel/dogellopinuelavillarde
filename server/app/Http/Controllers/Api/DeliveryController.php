@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Services\OrderStatusWebhookService;
+
 use App\Http\Controllers\Controller;
 use App\Models\Delivery;
 use App\Models\Order;
@@ -78,7 +80,7 @@ class DeliveryController extends Controller
         return response()->json(['deliveries' => $deliveries], 200);
     }
 
-    public function storeDelivery(Request $request)
+    public function storeDelivery(Request $request, OrderStatusWebhookService $webhookService)
     {
         $validated = $request->validate([
             'order_id' => ['required', 'integer', 'exists:tbl_orders,order_id'],
@@ -87,7 +89,7 @@ class DeliveryController extends Controller
             'delivery_status' => ['required', 'in:Pending,Out for Delivery,Delivered'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        DB::transaction(function () use ($validated, $webhookService) {
             Delivery::create([
                 'order_id' => $validated['order_id'],
                 'driver_name' => $validated['driver_name'],
@@ -95,17 +97,30 @@ class DeliveryController extends Controller
                 'delivery_status' => $validated['delivery_status'],
             ]);
 
-            $order = Order::find($validated['order_id']);
+            $order = Order::with(['customer', 'product'])->find($validated['order_id']);
             if ($order) {
+                $currentStatus = $order->status;
                 $mapped = $validated['delivery_status'] === 'Delivered' ? 'Delivered' : 'Processing';
-                $order->update(['status' => $mapped]);
+
+                if ($currentStatus !== $mapped) {
+                    $order->update(['status' => $mapped]);
+
+                    if ($mapped === 'Processing' && $currentStatus === 'Pending') {
+                        $webhookService->sendOrderStatus($order->fresh(['customer', 'product']), 'confirmed');
+                    }
+
+                    if ($mapped === 'Delivered') {
+                        $webhookService->sendOrderStatus($order->fresh(['customer', 'product']), 'delivered');
+                    }
+                }
             }
         });
 
         return response()->json(['message' => 'Delivery Successfully Created.'], 200);
     }
 
-    public function updateDelivery(Request $request, Delivery $delivery)
+
+    public function updateDelivery(Request $request, Delivery $delivery, OrderStatusWebhookService $webhookService)
     {
         $validated = $request->validate([
             'driver_name' => ['required', 'string', 'max:100'],
@@ -113,17 +128,29 @@ class DeliveryController extends Controller
             'delivery_status' => ['required', 'in:Pending,Out for Delivery,Delivered'],
         ]);
 
-        DB::transaction(function () use ($delivery, $validated) {
+        DB::transaction(function () use ($delivery, $validated, $webhookService) {
             $delivery->update([
                 'driver_name' => $validated['driver_name'],
                 'delivery_date' => $validated['delivery_date'],
                 'delivery_status' => $validated['delivery_status'],
             ]);
 
-            $order = $delivery->order;
+            $order = $delivery->order()->with(['customer', 'product'])->first();
             if ($order) {
+                $currentStatus = $order->status;
                 $mapped = $validated['delivery_status'] === 'Delivered' ? 'Delivered' : 'Processing';
-                $order->update(['status' => $mapped]);
+
+                if ($currentStatus !== $mapped) {
+                    $order->update(['status' => $mapped]);
+
+                    if ($mapped === 'Processing' && $currentStatus === 'Pending') {
+                        $webhookService->sendOrderStatus($order->fresh(['customer', 'product']), 'confirmed');
+                    }
+
+                    if ($mapped === 'Delivered') {
+                        $webhookService->sendOrderStatus($order->fresh(['customer', 'product']), 'delivered');
+                    }
+                }
             }
         });
 
@@ -132,6 +159,7 @@ class DeliveryController extends Controller
             'message' => 'Delivery Successfully Updated.',
         ], 200);
     }
+
 
     public function archiveDelivery(Request $request, Delivery $delivery)
     {

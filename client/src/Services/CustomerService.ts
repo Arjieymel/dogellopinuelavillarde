@@ -3,6 +3,7 @@ import AxiosInstance from "./AxiosInstance";
 export type CustomerPayload = {
     fullname: string;
     contact_number: string;
+    email?: string;
     address?: string;
 };
 
@@ -31,4 +32,5 @@ const CustomerService = {
 };
 
 export default CustomerService;
+
 

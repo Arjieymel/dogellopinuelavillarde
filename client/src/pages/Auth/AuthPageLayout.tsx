@@ -7,11 +7,11 @@ interface AuthPageLayoutProps {
 
 const AuthPageLayout: FC<AuthPageLayoutProps> = ({ children }) => {
   return (
-    <div className="relative min-h-screen flex flex-row bg-gradient-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
+    <div className="relative min-h-screen flex flex-row bg-linear-to-br from-blue-50 via-white to-blue-50 overflow-hidden">
 
       {/* subtle ambient background layers (do not affect image layout) */}
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.12),transparent_55%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,_rgba(37,99,235,0.10),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(59,130,246,0.12),transparent_55%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(37,99,235,0.10),transparent_55%)]" />
 
       {/* LEFT SIDE - FORM SECTION (UNCHANGED IMAGE POSITION INSIDE HEADER) */}
       <div className="relative flex flex-col justify-center items-center w-full lg:w-1/2 px-6 py-10 lg:py-0">
@@ -45,8 +45,8 @@ const AuthPageLayout: FC<AuthPageLayoutProps> = ({ children }) => {
       <div className="relative hidden lg:flex w-1/2 h-screen items-center justify-center bg-white/60 backdrop-blur-sm overflow-hidden">
 
         {/* subtle modern overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/12 via-transparent to-blue-900/12" />
-        <div className="absolute inset-0 bg-gradient-to-t from-white/40 via-transparent to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-br from-blue-600/12 via-transparent to-blue-900/12" />
+        <div className="absolute inset-0 bg-linear-to-t from-white/40 via-transparent to-transparent" />
 
         {/* optional soft blur glow */}
         <div className="absolute w-96 h-96 bg-blue-300/20 rounded-full blur-3xl top-1/4 right-1/4" />

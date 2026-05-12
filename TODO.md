@@ -1,7 +1,6 @@
-- [x] Inspect current AuthPageLayout implementation
-- [x] Create an edit plan that preserves image positions/structure
-- [x] Apply UI/UX improvements using Tailwind only (gradients, spacing, card styling, right-side overlays)
-- [ ] Run build/lint (note: repo already has existing lint errors unrelated to AuthPageLayout)
-- [ ] Verify on mobile: right image is hidden, left card remains centered
-
-
+- [x] Refactor OrderStatusWebhookService to strictly match required n8n payload schema
+- [x] Normalize/validate event_type values (created/confirmed/delivered/cancelled)
+- [x] Ensure mapping to order_status is correct and deterministic
+- [x] Improve error handling/logging and make request building reusable
+- [x] Verify payload fields presence (order_id, order_status, event_type, customer_name, customer_email, product_name, quantity, total_amount)
+- [ ] Quick manual run: create order, update to processing, update to delivered, cancel order; confirm n8n receives correct POST
